@@ -1,1 +1,2 @@
+file:///C:/Users/subha/OneDrive/Documents/AI%20CHATBOT/AI%20CHATBOT/netlify-deploy/index.html
 https://askorawebai.netlify.app
