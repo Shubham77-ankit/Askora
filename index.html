@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NovaAI Chatbot System – GUVI Geek Network</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ===================== TOP NAV ===================== -->
+  <header class="navbar">
+    <div class="brand">
+      <span class="logo">🤖</span>
+      <div>
+        <h1>AI Chatbot System</h1>
+        <p>GUVI Geek Network Pvt. Ltd. — Enterprise NLP Support Platform</p>
+      </div>
+    </div>
+    <div class="nav-right">
+      <span class="badge badge-green">● Live Demo</span>
+      <span id="roleBadge" class="badge badge-blue">Role: Customer User</span>
+      <button id="switchRoleBtn" class="btn btn-primary" onclick="switchRole()">Switch to Admin ⚙️</button>
+    </div>
+  </header>
+
+  <!-- ===================== MAIN CONTENT ===================== -->
+  <main id="app">
+
+    <!-- ---- USER DASHBOARD ---- -->
+    <div id="userDashboard" class="dashboard">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('chat','userDashboard')">💬 AI Support Chat</button>
+        <button class="tab-btn" onclick="switchTab('history','userDashboard')">📜 Interaction History</button>
+        <button class="tab-btn" onclick="switchTab('feedback','userDashboard')">⭐ Submit Feedback</button>
+      </div>
+
+      <!-- CHAT TAB -->
+      <div id="chat" class="tab-content active">
+        <div class="card">
+          <div class="card-header">
+            <span class="text-success">🤖 NovaAI Virtual Assistant (Online · 24/7)</span>
+            <label class="toggle-label">
+              <input type="checkbox" id="voiceToggle" checked /> 🔊 Voice Output
+            </label>
+          </div>
+          <div id="chatMessages" class="chat-box">
+            <!-- seeded in JS -->
+          </div>
+          <div class="suggestions" id="suggestionChips"></div>
+          <div class="input-row">
+            <input id="queryInput" type="text" placeholder="Type your question here, e.g. How do I reset my password?" onkeydown="if(event.key==='Enter')sendChat()" />
+            <button class="btn btn-secondary" onclick="simulateVoice()">🎤 Voice</button>
+            <button class="btn btn-primary" onclick="sendChat()">Send ➤</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- HISTORY TAB -->
+      <div id="history" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <span>📜 Past Interaction History</span>
+            <div class="filter-row">
+              <input id="historyFilter" type="text" placeholder="Filter queries..." style="width:200px" oninput="filterHistory()" />
+              <button class="btn btn-secondary" onclick="renderHistory()">🔄 Refresh</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Query</th><th>Intent Detected</th><th>Confidence</th><th>Latency</th><th>Status</th></tr></thead>
+              <tbody id="historyBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- FEEDBACK TAB -->
+      <div id="feedback" class="tab-content">
+        <div class="card" style="max-width:640px">
+          <h2 class="card-title">⭐ Submit Feedback on Chatbot Performance</h2>
+          <p class="text-muted" style="margin-bottom:18px">Your rating directly tunes the AI reinforcement model.</p>
+          <label class="field-label">Overall Rating</label>
+          <select id="fbRating">
+            <option value="5">⭐⭐⭐⭐⭐ Excellent (5)</option>
+            <option value="4">⭐⭐⭐⭐ Good (4)</option>
+            <option value="3">⭐⭐⭐ Average (3)</option>
+            <option value="2">⭐⭐ Below Average (2)</option>
+            <option value="1">⭐ Poor (1)</option>
+          </select>
+          <label class="field-label" style="margin-top:14px">Was the response helpful?</label>
+          <div class="radio-group">
+            <label><input type="radio" name="helpful" value="yes" checked /> 👍 Yes</label>
+            <label><input type="radio" name="helpful" value="no" /> 👎 No</label>
+          </div>
+          <label class="field-label" style="margin-top:14px">Additional Comments</label>
+          <textarea id="fbComments" rows="4" placeholder="Share your suggestions or observations..."></textarea>
+          <button class="btn btn-primary" style="margin-top:14px;width:100%" onclick="submitFeedback()">Submit Feedback</button>
+          <div id="fbConfirmation" class="alert" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---- ADMIN DASHBOARD ---- -->
+    <div id="adminDashboard" class="dashboard" style="display:none">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('config','adminDashboard')">⚙️ Chatbot Configuration</button>
+        <button class="tab-btn" onclick="switchTab('analytics','adminDashboard');renderAnalytics()">📊 Data Analysis</button>
+        <button class="tab-btn" onclick="switchTab('algorithm','adminDashboard')">🧠 Algorithm Improvement</button>
+      </div>
+
+      <!-- CONFIG TAB -->
+      <div id="config" class="tab-content active">
+        <div class="card">
+          <h2 class="card-title">Configure Response Templates &amp; Knowledge Base</h2>
+          <div class="grid-2">
+            <div>
+              <label class="field-label">Intent Identifier</label>
+              <input id="cfgIntent" type="text" placeholder="e.g. BILLING_DISPUTE" />
+            </div>
+            <div>
+              <label class="field-label">Category</label>
+              <input id="cfgCategory" type="text" placeholder="e.g. BILLING" />
+            </div>
+            <div>
+              <label class="field-label">Query Sample / Pattern</label>
+              <input id="cfgPattern" type="text" placeholder="e.g. I was charged incorrectly" />
+            </div>
+            <div>
+              <label class="field-label">Confidence Threshold</label>
+              <input id="cfgThreshold" type="number" value="0.65" min="0.1" max="0.99" step="0.05" />
+            </div>
+          </div>
+          <label class="field-label" style="margin-top:12px">Keywords (comma-separated)</label>
+          <input id="cfgKeywords" type="text" placeholder="charge,invoice,billing,dispute" />
+          <label class="field-label" style="margin-top:12px">Response Template</label>
+          <textarea id="cfgTemplate" rows="4" placeholder="Provide the chatbot response for this intent..."></textarea>
+          <div style="margin-top:14px;display:flex;gap:10px;align-items:center">
+            <button class="btn btn-primary" onclick="saveConfig()">Save Template</button>
+            <button class="btn btn-secondary" onclick="clearConfig()">Clear</button>
+            <span id="cfgStatus" class="text-success" style="font-size:13px"></span>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <h3 class="card-title">Knowledge Base (Click a row to edit)</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Intent</th><th>Category</th><th>Pattern</th><th>Threshold</th><th>Keywords</th></tr></thead>
+              <tbody id="kbBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ANALYTICS TAB -->
+      <div id="analytics" class="tab-content">
+        <div class="kpi-grid" id="kpiGrid"></div>
+        <div class="charts-row">
+          <div class="card chart-card">
+            <h3 class="card-title">Top Query Categories</h3>
+            <canvas id="categoryChart" height="220"></canvas>
+          </div>
+          <div class="card chart-card">
+            <h3 class="card-title">Customer Sentiment Breakdown</h3>
+            <canvas id="sentimentChart" height="220"></canvas>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <div class="card-header">
+            <span>Recent Interaction Logs</span>
+            <button class="btn btn-secondary" onclick="renderAnalytics()">🔄 Refresh</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Query</th><th>Intent</th><th>Confidence</th><th>Latency</th><th>Status</th></tr></thead>
+              <tbody id="logBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ALGORITHM TAB -->
+      <div id="algorithm" class="tab-content">
+        <div class="card">
+          <h2 class="card-title">🧠 Machine Learning Algorithm Optimization</h2>
+          <div class="model-stats">
+            <div class="stat-block"><span class="stat-label">Active Model</span><span class="stat-value" id="modelName">Ensemble-NLP-v2.4</span></div>
+            <div class="stat-block"><span class="stat-label">Accuracy</span><span class="stat-value text-success" id="modelAccuracy">91.2%</span></div>
+            <div class="stat-block"><span class="stat-label">Precision</span><span class="stat-value" id="modelPrecision">92.5%</span></div>
+            <div class="stat-block"><span class="stat-label">Recall</span><span class="stat-value" id="modelRecall">89.8%</span></div>
+          </div>
+          <div class="grid-2" style="margin-top:16px">
+            <div>
+              <label class="field-label">Learning Rate (η)</label>
+              <input id="learningRate" type="number" value="0.05" min="0.001" max="0.5" step="0.01" />
+            </div>
+            <div>
+              <label class="field-label">Training Epochs</label>
+              <input id="epochs" type="number" value="50" min="10" max="500" step="10" />
+            </div>
+          </div>
+          <div style="margin-top:16px">
+            <label class="field-label">Retraining Progress</label>
+            <div class="progress-track"><div class="progress-bar" id="trainProgress" style="width:0%">0%</div></div>
+          </div>
+          <div style="margin-top:14px;display:flex;gap:12px;align-items:center">
+            <button class="btn btn-primary" id="retrainBtn" onclick="startRetraining()">🚀 Retrain Model Asynchronously</button>
+            <span id="trainStatus" class="text-muted" style="font-size:13px">Ready for optimization</span>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px;background:rgba(99,102,241,0.07);border-color:rgba(99,102,241,0.3)">
+          <h3 class="card-title" style="color:#f59e0b">How Algorithm Improvement Works</h3>
+          <ul class="info-list">
+            <li><strong>Input:</strong> Customer interaction logs, feedback ratings (1–5 stars), and intent matching accuracy.</li>
+            <li><strong>Multithreaded Execution:</strong> Retraining runs asynchronously so the dashboard stays responsive.</li>
+            <li><strong>Ensemble Tuning:</strong> Iterative epochs adjust the blended weights between TF-IDF vector similarity and heuristic keyword patterns.</li>
+            <li><strong>Feedback Reinforcement:</strong> Positive ratings strengthen current pathways; negative ratings shift weight toward heuristic precision.</li>
+            <li><strong>Output:</strong> Updated model accuracy, precision, recall metrics persisted to the database via JDBC.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="footer">
+    <span>AI Chatbot System · GUVI Geek Network Pvt. Ltd. © 2024</span>
+    <span>Built with Java 17 · Swing GUI · Embedded HTTP Servlets · JDBC</span>
+    <a href="presentation/index.html" target="_blank" class="badge badge-blue">📑 View Slides</a>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
